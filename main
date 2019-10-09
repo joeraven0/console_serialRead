@@ -1,37 +1,37 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO.Ports;
-using System.Diagnostics;
 
-namespace Gryphon4500_ImageSaver
+class PortDataReceived
 {
-    class Program
+    public static void Main()
     {
-        static void Main(string[] args)
-        {
-            string[] names = SerialPort.GetPortNames();
-            Console.WriteLine("Serial ports:");
-            foreach (string name in names)
-                Console.WriteLine(name);
-            Console.Write("Choose one:");
-            SerialPort p = new SerialPort(Console.ReadLine());
-            p.DataReceived += new SerialDataReceivedEventHandler(p_DataReceived);
-            p.Open();
-            string line;
-            do
-            {
-                line = Console.ReadLine();
-                p.Write(line);
-            } while (line != "quit");
-            p.Close();
-        }
- 
-        static void p_DataReceived(object sender, SerialDataReceivedEventArgs e)
-        {
-            Console.WriteLine(
-                (sender as SerialPort).ReadExisting());
-        }
+        SerialPort mySerialPort = new SerialPort("COM5");
+
+        mySerialPort.BaudRate = 115200;
+        mySerialPort.Parity = Parity.None;
+        mySerialPort.StopBits = StopBits.One;
+        mySerialPort.DataBits = 8;
+        mySerialPort.Handshake = Handshake.None;
+        mySerialPort.RtsEnable = true;
+
+        mySerialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler);
+
+        mySerialPort.Open();
+
+        Console.WriteLine("Press any key to continue...");
+        Console.WriteLine();
+        Console.ReadKey();
+        mySerialPort.Close();
+    }
+
+    private static void DataReceivedHandler(
+                        object sender,
+                        SerialDataReceivedEventArgs e)
+    {
+        SerialPort sp = (SerialPort)sender;
+        string indata = sp.ReadExisting();
+        
+        Console.Write(indata);
+        Console.WriteLine("\x0D");
     }
 }
